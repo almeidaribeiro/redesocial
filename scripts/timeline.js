@@ -4,12 +4,13 @@ const USER_ID = window.location.search.match(/\?id=(.*)/)[1];
 $(document).ready(function() {
   database.ref("posts/" + USER_ID).once('value').then(function(snapshot) {
     snapshot.forEach(function(childSnapshot) {
-      let childKey = childSnapshot.Key;
+      let childKey = childSnapshot.key;
       let childData = childSnapshot.val();
       if (childData.post) {
         database.ref("users/" + USER_ID).once('value').then(function(snapshot) {
           const username = snapshot.val().username;
-          $(".post-list").prepend(templateStringPost(childData.post, username))
+          $(".post-list").prepend(templateStringPost(childData.post, username, childKey))
+          paloma(childKey);
         });
       };
     });
@@ -25,6 +26,7 @@ $(document).ready(function() {
     } else {
       post(text, database, USER_ID);
       database.ref("users/" + USER_ID).once('value').then(function(snapshot) {
+      
         const username = snapshot.val().username;
         $(".post-list").prepend(templateStringPost(text, username))
       })
@@ -33,10 +35,20 @@ $(document).ready(function() {
   });
 });
 
-function templateStringPost(text, name) {
+function templateStringPost(text, name, key) {
   return `<div>
   <p><strong>${name}</strong></p>
   <p>${text}</p>
-  <button type="button"> Excluir </button>
+  <button data-key="${key}" type="button" class="delete"> Excluir </button>
   </div>`
 }
+
+function paloma (key){
+  $(`button[data-key=${key}]`).click(function(){
+    $(this).parent().remove();
+    database.ref(`posts/${USER_ID}/${key}`).remove();
+   })
+ 
+
+}
+
