@@ -23,8 +23,9 @@ $(document).ready(function () {
               const name = snapshot.val().username;
 
               $(".post-list").append(templateStringPost(posts[key].post, name, key, posts[key].likeCount))
-              setKeyToButton(key)
+              setKeyToDelete(key)
               setKeyToLike(key)
+              setKeyToEdit(text, key)
             })
         })
       })
@@ -63,21 +64,35 @@ function post(text, database, USER_ID, private = false) {
 function templateStringPost(text, name, key, likeCount = 0) {
   return `<div class= "mt-0">
   <p><strong>${name}</strong></p>
-  <p>${text}</p>
+  <p class="text-post">${text}</p>
   <button type="button" data-like=${key} value=${likeCount}><img src="../img/cookie.ico">&nbsp;&nbsp<span>${likeCount}</span></button>&nbsp;&nbsp
   <button data-key="${key}" type="button" class="delete"> Excluir </button>
+  <button data-edit="${key}" type="button" class="edit"> Editar </button>
   </div>`
 }
 
-function setKeyToButton(key) {
+function setKeyToEdit(text, key) {
+  $(`button[data-edit=${key}]`).click(function (){
+    let editPost = prompt(`Edite o seu post: ${text}`);
+    console.log(editPost)
+  })
+
+} 
+
+function setKeyToDelete(key) {
   $(`button[data-key=${key}]`).click(function () {
-    $(this).parent().remove();
-    $(".post-input").val("");
+    let deletePost = confirm("Deseja apagar mesmo este post?");
+    if(deletePost){
+      $(this).parent().remove();
+      $(".post-input").val("");
 
     database.ref(`posts/${USER_ID}/${key}`).remove();
-  })
+    }else{
+      event.preventDefault();
+    }
+    
+  });
 }
-
 
 function setPublicOrPrivatePost(event) {
   if (event.val() === 'public') {
